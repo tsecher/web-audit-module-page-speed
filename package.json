@@ -1,0 +1,10 @@
+{
+  "name": "web-audit-module-page-speed",
+  "version": "0.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "web_audit": "^5.0.0-rc5"
+  }
+}
