@@ -27,6 +27,10 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 		return `page_speed`;
 	}
 
+	getSchema() {
+		return schema;
+	}
+
 	contextsData = {};
 
 	/**
@@ -101,8 +105,12 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 			...data
 		};
 		this.context?.eventBus.emit(PageSpeedModuleEvents.onResult, eventData);
-		this.context?.config?.logger.result(`Page Speed`, eventData.result, urlWrapper.url.toString());
-		this.context?.config?.storage?.add(this, 'page_speed', this.context, eventData.result);
+
+		// Main
+		const mainIndicators = this.filterMainIndicators(eventData.result);
+		this.context?.config?.logger.result(`Page Speed`, mainIndicators, urlWrapper.url.toString());
+		this.context?.config?.storage?.add(this, 'page_speed', this.context, mainIndicators);
+		this.context?.config?.storage?.add(this, 'page_speed_details', this.context, eventData.result);
 		this.context?.eventBus.emit(ModuleEvents.afterAnalyse, eventData);
 		this.context?.eventBus.emit(PageSpeedModuleEvents.afterAnalyse, eventData);
 	}
@@ -127,18 +135,12 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 		if (json?.lighthouseResult?.audits['first-contentful-paint']?.displayValue) {
 			const audits = json.lighthouseResult?.audits;
 
+			fs.writeFileSync('test.json', JSON.stringify(audits), 'utf-8');
+
 			const result = {};
-			[
-				"speed-index",
-				"largest-contentful-paint",
-				"cumulative-layout-shift",
-				"first-contentful-paint",
-				"server-response-time"
-			].forEach((indicator) => {
-				if (audits[indicator]){
-					result[indicator] = audits[indicator].numericValue || '';
-					result[indicator + '-score'] = audits[indicator].score || '';
-				}
+			Object.keys(audits).forEach(indicator => {
+				result[indicator] = audits[indicator].numericValue || '';
+				result[indicator + '-score'] = audits[indicator].score || '';
 			})
 
 			return result;
@@ -146,8 +148,25 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 		return null;
 	}
 
-	getSchema() {
-		return schema;
+	/**
+	 * Filters main indicators;
+	 */
+	filterMainIndicators(allResults) {
+		const main = {};
+		[
+			"url",
+			"context",
+			"speed-index",
+			"largest-contentful-paint",
+			"cumulative-layout-shift",
+			"first-contentful-paint",
+			"server-response-time"
+		].forEach(indicator => {
+			main[indicator] = allResults[indicator]
+			main[`${indicator}-score`] = allResults[`${indicator}-score`]
+		})
+
+		return main;
 	}
 
 }
