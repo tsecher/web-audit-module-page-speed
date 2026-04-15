@@ -1,6 +1,8 @@
 import {AbstractPuppeteerJourneyModule} from 'web_audit/dist/journey/AbstractPuppeteerJourneyModule.js';
 import {PuppeteerJourneyEvents} from 'web_audit/dist/journey/AbstractPuppeteerJourney.js';
 import {ModuleEvents} from 'web_audit/dist/modules/ModuleInterface.js';
+import schema from "./page-speed.schema.json" with {type: "json"};
+import fs from "fs";
 
 /**
  * Page Speed Module events.
@@ -33,18 +35,7 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 	async init(context) {
 		this.context = context;
 		// Install Page Speed store.
-		this.context.config.storage?.installStore('page_speed', this.context, {
-			url: 'Url',
-			context: 'Context',
-			'first-contentful-paint-ms': 'First Contentful Paint MS',
-			'first-input-delay-ms': 'First Input Delay MS',
-			'first-contentful-paint': 'First Contentful Paint',
-			'speed-index': 'Speed Index',
-			'interactive': 'Time To Interactive',
-			'first-meaningful-paint': 'First Meaningful Paint',
-			'first-cpu-idle': 'First CPU Idle',
-			'estimated-input-latency': 'Estimated Input Latency',
-		});
+		this.context.config.storage?.installSchema(this, this.context);
 
 		// Emit.
 		this.context.eventBus.emit(PageSpeedModuleEvents.createPageSpeedModule, {module: this});
@@ -55,10 +46,10 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 	 */
 	initEvents(journey) {
 		journey.on(PuppeteerJourneyEvents.JOURNEY_START, async (data) => {
-		    this.contextsData = {};
+			this.contextsData = {};
 		});
 		journey.on(PuppeteerJourneyEvents.JOURNEY_NEW_CONTEXT, async (data) => {
-		    this.contextsData[data.name] = await this.getContextData(data);
+			this.contextsData[data.name] = await this.getContextData(data);
 		});
 	}
 
@@ -111,7 +102,7 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 		};
 		this.context?.eventBus.emit(PageSpeedModuleEvents.onResult, eventData);
 		this.context?.config?.logger.result(`Page Speed`, eventData.result, urlWrapper.url.toString());
-		this.context?.config?.storage?.add('page_speed', this.context, eventData.result);
+		this.context?.config?.storage?.add(this, 'page_speed', this.context, eventData.result);
 		this.context?.eventBus.emit(ModuleEvents.afterAnalyse, eventData);
 		this.context?.eventBus.emit(PageSpeedModuleEvents.afterAnalyse, eventData);
 	}
@@ -123,23 +114,40 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 	 * @returns {Promise<{"first-input-delay-ms": (string|*), "first-contentful-paint": (*|string), "first-contentful-paint-ms": (string|*), "speed-index": (*|string), "first-cpu-idle": (*|string), "estimated-input-latency": (*|string), "first-meaningful-paint": (*|string), interactive: (*|string)}|null>}
 	 */
 	async getResults(url) {
-		const api = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}`;
+		if (typeof this.context.config?.AppConfig?.config?.page_speed?.api_key === 'undefined') {
+			this.context.config.logger.error(`You need to define a page speed api key in the web-audit.config.json ("page_speed": {"api_key": "..."})`)
+			process.exit;
+		}
+
+		const api = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${this.context.config.AppConfig.config.page_speed.api_key}`;
 		const response = await fetch(api);
 		const json = await response.json();
 
+
 		if (json?.lighthouseResult?.audits['first-contentful-paint']?.displayValue) {
-			return {
-				'first-contentful-paint-ms': json.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.category || '',
-				'first-input-delay-ms': json.loadingExperience?.metrics?.FIRST_INPUT_DELAY_MS?.category || '',
-				'first-contentful-paint': json.lighthouseResult?.audits['first-contentful-paint']?.numericValue  || '',
-				'speed-index': json.lighthouseResult?.audits['speed-index']?.numericValue  || '',
-				'interactive': json.lighthouseResult?.audits['interactive']?.numericValue  || '',
-				'first-meaningful-paint': json.lighthouseResult?.audits['first-meaningful-paint']?.numericValue  || '',
-				'first-cpu-idle': json.lighthouseResult?.audits['first-cpu-idle']?.numericValue  || '',
-				'estimated-input-latency': json.lighthouseResult?.audits['estimated-input-latency']?.numericValue  || '',
-			}
+			const audits = json.lighthouseResult?.audits;
+
+			const result = {};
+			[
+				"speed-index",
+				"largest-contentful-paint",
+				"cumulative-layout-shift",
+				"first-contentful-paint",
+				"server-response-time"
+			].forEach((indicator) => {
+				if (audits[indicator]){
+					result[indicator] = audits[indicator].numericValue || '';
+					result[indicator + '-score'] = audits[indicator].score || '';
+				}
+			})
+
+			return result;
 		}
 		return null;
+	}
+
+	getSchema() {
+		return schema;
 	}
 
 }

@@ -1,0 +1,116 @@
+{
+  "id": "page_speed",
+  "label": "Page Speed",
+  "description": "The Google Page Speed Insight analyse a webpage performance about speed rendering.",
+  "types": [
+    "page"
+  ],
+  "structure": {
+    "page_speed": {
+      "label": "Page Speed",
+      "description": "The Google Page Speed Insight analyse a webpage performance about speed rendering.",
+      "structure": {
+        "url": {
+          "label": "Url",
+          "description": "The audited page",
+          "type": "string"
+        },
+        "context": {
+          "label": "Context",
+          "description": "The context",
+          "type": "string"
+        },
+        "speed-index": {
+          "label": "Speed Index",
+          "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+          "type": "number",
+          "values": {
+            "target": 0,
+            "min_target": 1300
+          }
+        },
+        "speed-index-score": {
+          "label": "Speed Index (score)",
+          "description": "Speed Index shows how quickly the contents of a page are visibly populated. [Learn more about the Speed Index metric](https://developer.chrome.com/docs/lighthouse/performance/speed-index/).",
+          "type": "number",
+          "values": {
+            "target": 1,
+            "min_target": 0.8
+          }
+        },
+        "largest-contentful-paint": {
+          "label": "Largest Contentful Paint",
+          "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+          "type": "number",
+          "values": {
+            "target": 0,
+            "min_target": 1300
+          }
+        },
+        "largest-contentful-paint-score": {
+          "label": "Largest Contentful Paint (score)",
+          "description": "Largest Contentful Paint marks the time at which the largest text or image is painted. [Learn more about the Largest Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+          "type": "number",
+          "values": {
+            "target": 1,
+            "min_target": 0.8
+          }
+        },
+        "cumulative-layout-shift": {
+          "label": "Cumulative Layout Shift",
+          "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+          "type": "number",
+          "values": {
+            "target": 0,
+            "min_target": 1800
+          }
+        },
+        "cumulative-layout-shift-score": {
+          "label": "Cumulative Layout Shift (score)",
+          "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+          "type": "number",
+          "values": {
+            "target": 1,
+            "min_target": 0.8
+          }
+        },
+        "first-contentful-paint": {
+          "label": "First Contentful Paint",
+          "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+          "type": "number",
+          "values": {
+            "target": 0,
+            "min_target": 1800
+          }
+        },
+        "first-contentful-paint-score": {
+          "label": "First Contentful Paint (score)",
+          "description": "First Contentful Paint marks the time at which the first text or image is painted. [Learn more about the First Contentful Paint metric](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/).",
+          "type": "number",
+          "values": {
+            "target": 1,
+            "min_target": 0.8
+          }
+        },
+        "server-response-time": {
+          "label": "Initial server response time was short",
+          "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+          "type": "number",
+          "values": {
+            "target": 0,
+            "min_target": 1800
+          }
+        },
+        "server-response-time-score": {
+          "label":  "Initial server response time was short (score)",
+          "description": "Keep the server response time for the main document short because all other requests depend on it. [Learn more about the Time to First Byte metric](https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/).",
+          "type": "number",
+          "values": {
+            "target": 1,
+            "min_target": 0.8
+          }
+        }
+      }
+    }
+  }
+}
