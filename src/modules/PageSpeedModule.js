@@ -108,7 +108,6 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 
 		// Main
 		const mainIndicators = this.filterMainIndicators(eventData.result);
-		this.context?.config?.logger.result(`Page Speed`, mainIndicators, urlWrapper.url.toString());
 		this.context?.eventBus.emit(ModuleEvents.onAnalyseSummary, {module: this, group_id:`page_speed` , url: urlWrapper, summary: mainIndicators});
 		this.context?.config?.storage?.add(this, 'page_speed', this.context, mainIndicators);
 		this.context?.config?.storage?.add(this, 'page_speed_details', this.context, eventData.result);
@@ -135,8 +134,6 @@ export default class PageSpeedModule extends AbstractPuppeteerJourneyModule {
 
 		if (json?.lighthouseResult?.audits['first-contentful-paint']?.displayValue) {
 			const audits = json.lighthouseResult?.audits;
-
-			fs.writeFileSync('test.json', JSON.stringify(audits), 'utf-8');
 
 			const result = {};
 			Object.keys(audits).forEach(indicator => {
